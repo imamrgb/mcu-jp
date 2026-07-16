@@ -1,0 +1,7 @@
+gemini.config.json
+gemini.config.local.json
+.env
+.env.*
+__pycache__/
+*.pyc
+*.zip
