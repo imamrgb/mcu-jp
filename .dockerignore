@@ -1,0 +1,11 @@
+.git
+.github
+__pycache__
+*.pyc
+*.pyo
+.env
+.env.*
+gemini.config.json
+gemini.config.local.json
+*.zip
+README_PATCH.txt
