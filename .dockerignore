@@ -8,4 +8,4 @@ __pycache__
 gemini.config.json
 gemini.config.local.json
 *.zip
-README_PATCH.txt
+index.before-responsive.html

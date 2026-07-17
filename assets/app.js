@@ -284,24 +284,30 @@ async function exportWord(){
   const button=el('btnExportWord');
   if(button) button.disabled=true;
   try{
-    showStatus('Menyiapkan dokumen Word...');
-    const pages=[];
-    for(const id of ['page1','page2','page3']){
-      const node=el(id);
-      if(!node) throw new Error(`Halaman ${id} tidak ditemukan.`);
-      pages.push(await capturePagePng(node));
+    if(location.protocol==='file:'){
+      throw new Error('Export Word memerlukan server aplikasi. Buka melalui Back4App/Railway atau jalankan serve_railway.py, bukan index.html langsung.');
     }
-    const filename=((getInputValue('nama')||'MCU').toString().trim().replace(/[^a-z0-9_-]+/gi,'_').replace(/^_+|_+$/g,'')||'MCU')+'_MCU.docx';
+    showStatus('Menyiapkan dokumen Word editable...');
+    const data=readForm();
+    if(data.stampData && !/^data:/i.test(data.stampData)){
+      try{ data.stampData=await fetchAsDataUrl(new URL(data.stampData,location.href).href); }catch{}
+    }
+    const filename=((data.nama||'MCU').toString().trim().replace(/[^a-z0-9_-]+/gi,'_').replace(/^_+|_+$/g,'')||'MCU')+'_MCU.docx';
     const response=await fetch('/api/export-word',{
       method:'POST',
       headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({filename,pages})
+      body:JSON.stringify({filename,data})
     });
     if(!response.ok){
       const payload=await response.json().catch(()=>({}));
       throw new Error(payload.error?.message||`Export Word gagal (${response.status}).`);
     }
     const blob=await response.blob();
+    if(!blob.size) throw new Error('File Word yang diterima kosong.');
+    const contentType=(response.headers.get('content-type')||'').toLowerCase();
+    if(!contentType.includes('wordprocessingml') && !contentType.includes('octet-stream')){
+      throw new Error('Respons server bukan dokumen Word.');
+    }
     const url=URL.createObjectURL(blob);
     const a=document.createElement('a');
     a.href=url;
@@ -309,8 +315,8 @@ async function exportWord(){
     document.body.appendChild(a);
     a.click();
     a.remove();
-    setTimeout(()=>URL.revokeObjectURL(url),1500);
-    showStatus('Dokumen Word berhasil dibuat.');
+    setTimeout(()=>URL.revokeObjectURL(url),5000);
+    showStatus('Dokumen Word editable berhasil dibuat.');
   }catch(error){
     console.error(error);
     showStatus(error.message||'Export Word gagal.');

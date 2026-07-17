@@ -1,7 +1,9 @@
-gemini.config.json
-gemini.config.local.json
 .env
 .env.*
+gemini.config.json
+gemini.config.local.json
 __pycache__/
 *.pyc
+*.pyo
 *.zip
+index.before-responsive.html
